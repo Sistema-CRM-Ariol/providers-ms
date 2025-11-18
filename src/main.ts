@@ -1,8 +1,32 @@
 import { NestFactory } from '@nestjs/core';
+import { Logger, ValidationPipe } from '@nestjs/common';
+import { MicroserviceOptions, Transport } from '@nestjs/microservices';
+
+import { envs } from './config';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
-  await app.listen(process.env.PORT ?? 3000);
+    const logger = new Logger('Providers MS');
+
+    const app = await NestFactory.createMicroservice<MicroserviceOptions>(
+        AppModule,
+        {
+            transport: Transport.NATS,
+            options: {
+                servers: envs.natsServers
+            }
+        }
+    );
+
+    app.useGlobalPipes(
+        new ValidationPipe({
+            whitelist: true,
+            forbidNonWhitelisted: true,
+        }),
+    );
+
+    await app.listen();
+
+    logger.log(`Providers Microservice running on NATS server: ${envs.natsServers}`);
 }
 bootstrap();
