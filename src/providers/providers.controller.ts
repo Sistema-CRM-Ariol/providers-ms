@@ -9,6 +9,11 @@ import { FilterPaginationDto } from 'src/common/dto/filter-pagination.dto';
 export class ProvidersController {
     constructor(private readonly providersService: ProvidersService) { }
 
+    @MessagePattern('providers.stats')
+    getStats() {
+        return this.providersService.getStats();
+    }
+
     @MessagePattern('providers.create')
     create(
         @Payload() createProviderDto: CreateProviderDto

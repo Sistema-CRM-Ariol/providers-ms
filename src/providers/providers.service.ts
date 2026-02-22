@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { CreateProviderDto } from './dto/create-provider.dto';
 import { UpdateProviderDto } from './dto/update-provider.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -8,9 +8,27 @@ import { FilterPaginationDto } from 'src/common/dto/filter-pagination.dto';
 @Injectable()
 export class ProvidersService {
 
+    private readonly logger = new Logger('ProvidersService');
+
     constructor(
         private readonly prisma: PrismaService,
     ) { }
+
+    // ─── Dashboard Stats ────────────────────────────────────────────
+    async getStats() {
+
+        const [totalProviders, activeProviders] = await Promise.all([
+            this.prisma.provider.count(),
+            this.prisma.provider.count({
+                where: { isActive: true },
+            }),
+        ]);
+
+        return {
+            totalProviders,
+            activeProviders,
+        };
+    }
 
     async create(createProviderDto: CreateProviderDto) {
         try {
